@@ -1,9 +1,14 @@
 class TimersManager {
 	constructor(timers = []) {
 		this.timers = timers;
+		// this.start = false;
 	}
 
 	add(body) {
+		/*if (this.start) {
+			throw new Error('Don\'t add new task');
+		}*/
+
 		return this._add(body, [...arguments].slice(1));
 	}
 
@@ -33,9 +38,15 @@ class TimersManager {
 				return timer;
 			})
 			.filter(Boolean);
+
+		/*if (this.timers.length === 0) {
+			this.start = false;
+		}*/
 	}
 
 	start() {
+		// this.start = true;
+
 		this.timers = this.timers
 			.map(timer => {
 				const {body, call} = timer;
@@ -50,7 +61,9 @@ class TimersManager {
 			});
 	}
 
-	stop() {}
+	stop() {
+		this.stop = false;
+	}
 
 	pause() {}
 
@@ -62,6 +75,11 @@ class TimersManager {
 		check(delay, 'number');
 		check(interval, 'boolean');
 		check(job, 'function');
+
+		/*const found = this.timers.filter(({body}) => body.name === name);
+		if (found.length > 0) {
+			throw new Error('Task is exist');
+		}*/
 
 		this
 			.timers
