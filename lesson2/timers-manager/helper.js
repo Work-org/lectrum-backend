@@ -44,4 +44,16 @@ function check(value, type = null) {
     return this;
 }
 
-module.exports = {check, detect, duplicate};
+function fire (cb, body) {
+    const out = cb.call();
+    console.log('-->', out, this);
+    
+    this._log({
+        name   : body.name,
+        in     : body.job.gett(),
+        out    : out,
+        created: Date.now()
+    });
+}
+
+module.exports = {check, detect, duplicate, fire};

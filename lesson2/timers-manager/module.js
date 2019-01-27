@@ -1,9 +1,9 @@
-const {check, duplicate, detect} = require('./helper');
-
+const {check, duplicate, detect, fire} = require('./helper');
 
 class TimersManager {
-    constructor(timers = []) {
-        this.timers = timers;
+    constructor() {
+        this.timers = [];
+        this.log = [];
         this.run = false; // main factor START
         // this.check = ::check;
         this.check = check.bind(this);
@@ -67,7 +67,7 @@ class TimersManager {
     stop() {
         this.run = false;
         this.timers.map(({stop, body}) => stop(body.name));
-        console.log("\n   stop ALL -->", );
+        console.log("\n   stop ALL -->",);
     }
     
     pause(name) {
@@ -77,28 +77,20 @@ class TimersManager {
         });
     }
     
+    print() {
+        console.log("   print -->", JSON.stringify(this.log, null, 2));
+    }
+    
     resume(name) {
         this.detect(name, this._prepare);
         console.log("\n   resume -->", name);
     }
     
-    //todo how set static mode property class?
-    // noinspection JSMethodCanBeStatic
-    _prepare(timer) {
-        const {body, call} = timer;
-        const {name, delay, interval} = body;
-        const timeFunction = interval ? setInterval : setTimeout;
-        const clearTimeFunction = interval ? clearInterval : clearTimeout;
-        
-        timer['stop'] = clearTimeFunction.bind(global, timeFunction(call, delay));
-        console.log('   _prepare -->', name);
-        
-        return timer;
-    }
-    
     _add(body, args) {
         const {name, job} = body;
-        
+        const callableArgument = () => arguments[1];
+        job.gett = callableArgument.bind(job);
+
         this
             .timers
             .push({
@@ -110,6 +102,38 @@ class TimersManager {
         
         return this;
     }
+    
+    _log(object) {
+        this.log.push(object);
+    }
+    
+    //todo how set static mode property class?
+    // noinspection JSMethodCanBeStatic
+    _prepare(timer) {
+        const {body, call} = timer;
+        const {name, delay, interval} = body;
+        const timeFunction = interval ? setInterval : setTimeout;
+        const clearTimeFunction = interval ? clearInterval : clearTimeout;
+        const manager = this;
+        timer['stop'] = clearTimeFunction
+            // .bind(global, timeFunction(call, delay));
+            .bind(global, timeFunction(function () {
+                const out = call.call();
+    
+                if (manager) {
+                    manager._log({
+                        name   : body.name,
+                        in     : body.job.gett().toString(),
+                        out    : out,
+                        created: (new Date()).toISOString()
+                    });
+                }
+            }, delay));
+        console.log('   _prepare -->', name);
+        
+        
+        return timer;
+    }
 }
 
-module.exports = new TimersManager([]);
+module.exports = new TimersManager();
