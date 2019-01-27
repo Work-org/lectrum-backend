@@ -1,10 +1,3 @@
-//Service function to found timer by name and callback
-function detect(name, callback = console.log.call(null, arguments)) {
-    check(name, 'string');
-    
-    return callback(this.timers.filter(({body}) => body.name === name)[0] || null);
-}
-
 //#NOTE7
 function duplicate(name) {
     const found = this.timers.filter(({body}) => body.name === name);
@@ -44,16 +37,18 @@ function check(value, type = null) {
     return this;
 }
 
-function fire (cb, body) {
-    const out = cb.call();
-    console.log('-->', out, this);
+function refresh() {
+    clearTimeout(this._timer);
+    console.info('   main timer update -->');
+    this._timer = setTimeout(() => this.timers.map(({body: {name}}) => this.remove(name)), this._afterTime + this._time);
     
-    this._log({
-        name   : body.name,
-        in     : body.job.gett(),
-        out    : out,
-        created: Date.now()
-    });
+    return this;
 }
 
-module.exports = {check, detect, duplicate, fire};
+function max() {
+    const timers = this.timers.map(({body: {delay}}) => delay);
+    this._afterTime = Math.max(...timers);
+    return this;
+}
+
+module.exports = {check, duplicate, refresh, max};

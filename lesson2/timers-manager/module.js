@@ -1,14 +1,22 @@
-const {check, duplicate, detect, fire} = require('./helper');
+const {check, duplicate, refresh, max} = require('./helper');
 
 class TimersManager {
-    constructor() {
+    constructor(ttl = false) {
         this.timers = [];
         this.log = [];
         this.run = false; // main factor START
         // this.check = ::check;
         this.check = check.bind(this);
         this.duplicate = duplicate.bind(this);
-        this.detect = detect.bind(this);
+        this.refresh = refresh.bind(this);
+        this.max = max.bind(this);
+        this._afterTime = 0;
+        this._time = 10000;
+        this._timer = setTimeout(function (){}, this._time);
+        
+        if (!ttl) {
+            console.info = () => {};
+        }
     }
     
     add(body) {
@@ -22,7 +30,9 @@ class TimersManager {
         return this
             .check([[name, 'string'], [delay, 'number'], [interval, 'boolean'], [job, 'function']])
             .duplicate(name)
-            ._add(body, [...arguments].slice(1));
+            // .refresh(delay) // timer main start when add timer
+            ._add(body, [...arguments].slice(1))
+            .max();
     }
     
     // noinspection JSUnusedGlobalSymbols
@@ -39,12 +49,12 @@ class TimersManager {
                 if (body.name === name) {
                     if (stop !== undefined) {
                         stop();
-                        console.log("\n   stop -->", name);
+                        console.info("\n   stop -->", name);
                     } else {
-                        console.log(`   > Timer ${name} was not started!`);
+                        console.info(`   > Timer ${name} was not started!`);
                     }
                     
-                    console.log("\n   remove -->", name);
+                    console.info("\n   remove -->", name);
                     
                     return null;
                 }
@@ -60,21 +70,22 @@ class TimersManager {
     
     start() {
         this.run = true;
-        console.log("\n   start -->");
+        console.info("\n   start -->");
         this.timers = this.timers.map(timer => this._prepare(timer));
     }
     
     stop() {
         this.run = false;
         this.timers.map(({stop, body}) => stop(body.name));
-        console.log("\n   stop ALL -->",);
+        console.info("\n   stop ALL -->",);
     }
     
     pause(name) {
-        this.detect(name, ({stop, body}) => {
-            stop(body.name);
-            console.log("\n   pause -->", name);
-        });
+        check(name, 'string');
+        const detect = this.timers.filter(({body}) => body.name === name)[0];
+        const {stop, body} = detect;
+        stop(body.name);
+        console.info("\n   pause -->", name);
     }
     
     print() {
@@ -82,8 +93,10 @@ class TimersManager {
     }
     
     resume(name) {
-        this.detect(name, this._prepare);
-        console.log("\n   resume -->", name);
+        check(name, 'string');
+        const detect = this.timers.filter(({body}) => body.name === name)[0];
+        this._prepare(detect);
+        console.info("\n   resume -->", name);
     }
     
     _add(body, args) {
@@ -98,7 +111,7 @@ class TimersManager {
                 call: job.bind(job, ...args),
             });
         
-        console.log("\n   added -->", name);
+        console.info("\n   added -->", name);
         
         return this;
     }
@@ -114,7 +127,8 @@ class TimersManager {
         const {name, delay, interval} = body;
         const timeFunction = interval ? setInterval : setTimeout;
         const clearTimeFunction = interval ? clearInterval : clearTimeout;
-        const manager = this;
+        // update timer main
+        const manager = this.refresh();
         timer['stop'] = clearTimeFunction
         // .bind(global, timeFunction(call, delay));
             .bind(global, timeFunction(function () {
@@ -138,11 +152,11 @@ class TimersManager {
                     manager._log(log);
                 }
             }, delay));
-        console.log('   _prepare -->', name);
+        console.info('   _prepare -->', name);
         
         
         return timer;
     }
 }
 
-module.exports = new TimersManager();
+module.exports = new TimersManager(true);

@@ -7,7 +7,6 @@ const t1 = {
     interval: false,
     job     : (a, b) => {
         const c = a + b;
-        console.log('>>>> job2', a, b, c);
         return c;
     }
 };
