@@ -90,7 +90,7 @@ class TimersManager {
         const {name, job} = body;
         const callableArgument = () => arguments[1];
         job.gett = callableArgument.bind(job);
-
+        
         this
             .timers
             .push({
@@ -116,17 +116,26 @@ class TimersManager {
         const clearTimeFunction = interval ? clearInterval : clearTimeout;
         const manager = this;
         timer['stop'] = clearTimeFunction
-            // .bind(global, timeFunction(call, delay));
+        // .bind(global, timeFunction(call, delay));
             .bind(global, timeFunction(function () {
-                const out = call.call();
-    
+                let log = {
+                    name   : body.name,
+                    in     : body.job.gett().toString(),
+                    created: (new Date()).toISOString()
+                };
+                
+                try {
+                    log.out = call.call();
+                } catch (e) {
+                    log.error = {
+                        name   : e.name,
+                        message: e.message,
+                        stack  : e.stack.split("\n")
+                    }
+                }
+                
                 if (manager) {
-                    manager._log({
-                        name   : body.name,
-                        in     : body.job.gett().toString(),
-                        out    : out,
-                        created: (new Date()).toISOString()
-                    });
+                    manager._log(log);
                 }
             }, delay));
         console.log('   _prepare -->', name);

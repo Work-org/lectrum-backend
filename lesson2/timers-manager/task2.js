@@ -14,4 +14,6 @@ const t1 = {
 
 manager.add(t1, 1000, -2);
 manager.start();
+
+// wait for job run
 setTimeout(() => manager.print(), 2000);
