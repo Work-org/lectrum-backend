@@ -24,6 +24,12 @@ manager
 manager.start();
 // console.log(manager.list());
 
-// stop t1 before him start
-setTimeout(() => manager.remove('t2'), 2000);
-manager.pause('t1');
+// manager.stop();
+
+setTimeout(() => manager.stop(), 3000);
+
+setTimeout(() => manager.pause('t2'), 1000);
+
+setTimeout(() => manager.resume('t2'), 1700);
+
+setTimeout(() => manager.remove('t2'), 2500);
