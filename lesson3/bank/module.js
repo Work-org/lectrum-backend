@@ -26,7 +26,7 @@ class Bank extends EventEmitter {
         });
         this.on('changeLimit', (personId, condition) => {
             const account = this._account(personId);
-            account[this.operations.changeLimit](condition);
+            account[this.operations.changeLimit](personId, condition);
         });
     }
     
@@ -59,7 +59,7 @@ class Bank extends EventEmitter {
                 },
                 [this.operations.send]:        function (agentId, sum) {
                     if (_self._valid(_self.operations.send, sum, this.personId, agentId)) {
-                        if (_self._conditionsChange(this, sum)) {
+                        if (_self._conditionsChange(this, -sum)) {
                             console.log(`${account.name} transferred ${sum}₴ for #${agentId} account`);
                             
                             this.balance -= sum;
@@ -162,7 +162,7 @@ class Bank extends EventEmitter {
     
     _conditionsChange(account, sum) {
         const condition      = account.limit || function (){};
-        const amount         = sum;
+        const amount         = Math.abs(sum);
         const currentBalance = account.balance;
         const updatedBalance = currentBalance + sum;
         
