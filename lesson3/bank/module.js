@@ -7,7 +7,8 @@ class Bank extends EventEmitter {
         this.operations   = {
             add:      Symbol('add'),
             get:      Symbol('get'),
-            withdraw: Symbol('withdraw')
+            withdraw: Symbol('withdraw'),
+            send:     Symbol('send')
         };
         this.valid        = this._valid.bind(this);
         
@@ -15,25 +16,20 @@ class Bank extends EventEmitter {
             console.error(error.name + ` --> ${error.message}`);
         });
         
-        try {
-            this.on('add', (...options) => this._account(options[0])[this.operations.add](options[1]));
-            this.on('get', (...options) => {
-                options[1](this._account(options[0])[this.operations.get]());
-            });
-            this.on('withdraw', (...options) => this._account(options[0])[this.operations.withdraw](options[1]));
-        } catch (error) {
-            this.emit('error', error);
-        }
+        this.on('add', (...options) => this._account(options[0])[this.operations.add](options[1]));
+        this.on('get', (personId, getter) => {
+            getter(this._account(personId)[this.operations.get]());
+        });
+        this.on('withdraw', (...options) => this._account(options[0])[this.operations.withdraw](options[1]));
+        this.on('send', (personId, ...options) => {
+            this._account(personId)[this.operations.send](...options)
+        });
     }
     
     register(account) {
-        return this._register(account);
-    }
-    
-    _register(account) {
         this._check(account);
         const _self = this;
-        
+    
         const key = (new Date()).getTime();
         this
             .accountsBank
@@ -54,10 +50,24 @@ class Bank extends EventEmitter {
                         console.log(`${account.name} took ${sum}₴ from my account`);
                         this.balance -= sum;
                     }
+                },
+                [this.operations.send]:     function (agentId, sum) {
+                    if (_self.valid(_self.operations.send, sum, this.personId, agentId)) {
+                        console.log(`${account.name} transferred ${sum}₴ for #${agentId} account`);
+                    
+                        this.balance -= sum;
+                        _self.accountsBank = _self.accountsBank.map(agent => {
+                            if (agent.personId === agentId) {
+                                agent.balance += sum;
+                            }
+                        
+                            return agent;
+                        });
+                    }
                 }
             });
         console.log(`${account.name} registered at bank, my balance ${account.balance}₴`);
-        
+    
         return key;
     }
     
@@ -77,7 +87,7 @@ class Bank extends EventEmitter {
     }
     
     _valid(operation, ...options) {
-        const [sum, personalId] = options;
+        const [sum, personalId, agentId] = options;
         
         switch (operation) {
             case this.operations.add:
@@ -97,6 +107,35 @@ class Bank extends EventEmitter {
                 const account = this._account(personalId);
                 if (account.balance - sum < 0) {
                     this.emit('error', new TypeError('Insufficient funds'));
+                    
+                    return false;
+                }
+                
+                break;
+            
+            case this.operations.send:
+                if (sum < 0) {
+                    this.emit('error', new TypeError('Transfer amount can\'t be less zero'));
+                    
+                    return false;
+                }
+                const personal = this._account(personalId);
+                
+                if (!personal) {
+                    this.emit('error', new TypeError('Invalid personal id'));
+                    
+                    return false;
+                }
+                
+                const agent = this._account(agentId);
+                if (!agent) {
+                    this.emit('error', new TypeError('Invalid agent id'));
+                    
+                    return false;
+                }
+                
+                if (personal.balance - sum < 0) {
+                    this.emit('error', new TypeError('Insufficient funds for transfer'));
                     
                     return false;
                 }
