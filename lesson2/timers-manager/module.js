@@ -159,4 +159,4 @@ class TimersManager {
     }
 }
 
-module.exports = new TimersManager(true);
+module.exports = new TimersManager();
