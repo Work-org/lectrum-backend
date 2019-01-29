@@ -5,12 +5,12 @@ class Bank extends EventEmitter {
         super();
         this.accountsBank = [];
         this.operations   = {
-            add:      Symbol('add'),
-            get:      Symbol('get'),
-            withdraw: Symbol('withdraw'),
-            send:     Symbol('send')
+            add:         Symbol('add'),
+            get:         Symbol('get'),
+            withdraw:    Symbol('withdraw'),
+            send:        Symbol('send'),
+            changeLimit: Symbol('change')
         };
-        this.valid        = this._valid.bind(this);
         
         this.on('error', error => {
             console.error(error.name + ` --> ${error.message}`);
@@ -24,50 +24,62 @@ class Bank extends EventEmitter {
         this.on('send', (personId, ...options) => {
             this._account(personId)[this.operations.send](...options)
         });
+        this.on('changeLimit', (personId, condition) => {
+            const account = this._account(personId);
+            account[this.operations.changeLimit](condition);
+        });
     }
     
     register(account) {
         this._check(account);
         const _self = this;
-    
+        
         const key = (new Date()).getTime();
         this
             .accountsBank
             .push({
                 ...account,
-                personId:                   key,
-                [this.operations.add]:      function (sum) {
-                    if (_self.valid(_self.operations.add, sum)) {
+                personId:                      key,
+                [this.operations.add]:         function (sum) {
+                    if (_self._valid(_self.operations.add, sum)) {
                         this.balance += sum;
-                        console.log(`${account.name} added ${sum}₴ to my account`);
+                        console.log(`${account.name} added to account ${sum}₴`);
                     }
                 },
-                [this.operations.get]:      function () {
+                [this.operations.get]:         function () {
                     return this.balance;
                 },
-                [this.operations.withdraw]: function (sum) {
-                    if (_self.valid(_self.operations.withdraw, sum, this.personId)) {
-                        console.log(`${account.name} took ${sum}₴ from my account`);
-                        this.balance -= sum;
+                [this.operations.withdraw]:    function (sum) {
+                    if (_self._valid(_self.operations.withdraw, sum, this.personId)) {
+                        if (_self._conditionsChange(this, -sum)) {
+                            console.log(`${account.name} took from account ${sum}₴`);
+                            this.balance -= sum;
+                        }
                     }
                 },
-                [this.operations.send]:     function (agentId, sum) {
-                    if (_self.valid(_self.operations.send, sum, this.personId, agentId)) {
-                        console.log(`${account.name} transferred ${sum}₴ for #${agentId} account`);
-                    
-                        this.balance -= sum;
-                        _self.accountsBank = _self.accountsBank.map(agent => {
-                            if (agent.personId === agentId) {
-                                agent.balance += sum;
-                            }
-                        
-                            return agent;
-                        });
+                [this.operations.send]:        function (agentId, sum) {
+                    if (_self._valid(_self.operations.send, sum, this.personId, agentId)) {
+                        if (_self._conditionsChange(this, sum)) {
+                            console.log(`${account.name} transferred ${sum}₴ for #${agentId} account`);
+                            
+                            this.balance -= sum;
+                            _self.accountsBank = _self.accountsBank.map(agent => {
+                                if (agent.personId === agentId) {
+                                    agent.balance += sum;
+                                }
+                                
+                                return agent;
+                            });
+                        }
                     }
-                }
+                },
+                [this.operations.changeLimit]: function (agentId, cb) {
+                    console.log(`Limit change conditions set for ${account.name}`);
+                    this.limit = cb;
+                },
             });
         console.log(`${account.name} registered at bank, my balance ${account.balance}₴`);
-    
+        
         return key;
     }
     
@@ -139,11 +151,25 @@ class Bank extends EventEmitter {
                     
                     return false;
                 }
-                
                 break;
             
             default:
                 break;
+        }
+        
+        return true;
+    }
+    
+    _conditionsChange(account, sum) {
+        const condition      = account.limit || function (){};
+        const amount         = sum;
+        const currentBalance = account.balance;
+        const updatedBalance = currentBalance + sum;
+        
+        if (!condition(amount, currentBalance, updatedBalance)) {
+            this.emit('error', new TypeError('Limit conditions don\'t allow operation'));
+            
+            return false;
         }
         
         return true;
