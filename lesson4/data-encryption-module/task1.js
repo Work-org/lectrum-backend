@@ -4,15 +4,18 @@ const customers = [
     {
         name    : 'Pitter Black',
         email   : 'pblack@email.com',
-        password: 'pblack_123'
+        password: 'pblack_123',
+        // manyFiled: 'someForErrorFire'
     },
     {
         name    : 'Oliver White',
         email   : 'owhite@email.com',
-        password: 'owhite_456'
+        password: 'owhite_456',
+        // secondError: 1
     }
 ];
-const ui = new Ui(customers, {objectMode: true});
+
+const ui = new Ui(customers, {objectMode: true, highWaterMark: 1});
 const guardian = new Guardian({
     readableObjectMode: true,
     writableObjectMode: true,

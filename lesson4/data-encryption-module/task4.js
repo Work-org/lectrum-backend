@@ -8,7 +8,17 @@ const customers = [
             password: '70626c61636b5f313233'
         },
         meta: {
-            algorithm: 'hex'
+            algorithm: 'hexx'
+        }
+    },
+    {
+        payload: {
+            name: 'Pitter White',
+            email: '6f776869746540656d61696c2e636f6d',
+            password: '6f77686974655f343536'
+        },
+        meta: {
+            algorithm: 'base64'
         }
     }
 ];
