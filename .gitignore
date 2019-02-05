@@ -60,6 +60,5 @@ typings/
 # next.js build output
 .next
 .idea/
-/lesson3/source/
-/lesson2/solutions/
-/lesson4/source/
+/lesson*/source/
+/lesson*/solutions/
