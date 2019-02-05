@@ -22,6 +22,6 @@ const guardian = new Guardian({
     readableObjectMode: true,
     writableObjectMode: true,
     decodeStrings:      false
-}, credentials);
+}, credentials, true);
 const manager  = new AccountManager({ objectMode: true }, credentials);
 ui.pipe(guardian).pipe(manager);

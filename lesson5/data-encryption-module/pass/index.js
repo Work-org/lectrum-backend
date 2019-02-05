@@ -1,41 +1,41 @@
-const crypto = require('crypto');
+const {Sign, Verify, createCipheriv, createDecipheriv, randomFill, scrypt} = require('crypto');
 
 class Pass {
-    constructor(algorithm, password) {
+    constructor(algorithm, password, sing) {
         this.algorithm = algorithm;
-        this.password  = password;
+        this.password = password;
+        this.beSign = sing;
+        // @todo 1 get key from certificate
+        // sign result
+        // verify result
     }
     
     async encrypt(data) {
-        const { key, vector } = await this._getOptions();
-        const cipher          = crypto.createCipheriv(this.algorithm, key, vector);
-        let encrypted         = cipher.update(JSON.stringify(data), 'utf8', 'hex');
-        encrypted += cipher.final('hex');
+        const {key, vector} = await this._getOptions();
+        const cipher = createCipheriv(this.algorithm, key, vector);
         
-        return encrypted;
+        return cipher.update(JSON.stringify(data), 'utf8', 'hex') + cipher.final('hex');
     }
     
     async decrypt(encrypted) {
-        const { key, vector } = await this._getOptions();
-        const decipher        = crypto.createDecipheriv(this.algorithm, key, vector);
-        let decrypted         = decipher.update(encrypted, 'hex', 'utf8');
-        decrypted += decipher.final('utf8');
+        const {key, vector} = await this._getOptions();
+        const decipher = createDecipheriv(this.algorithm, key, vector);
         
-        return decrypted;
+        return decipher.update(encrypted, 'hex', 'utf8') + decipher.final('utf8');
     }
     
     async _getOptions() {
-        const key    = await this._getKey(this.password).catch(err => console.log(err));
+        const key = await this._getKey(this.password).catch(err => console.log(err));
         const vector = await this._getBuffer().catch(err => console.log(err));
         
-        return { key, vector }
+        return {key, vector}
     }
     
     _getKey(password) {
         const salt = 'homework';
         
         return new Promise((resolve, reject) => {
-            crypto.scrypt(password, salt, 24, (err, derivedKey) => {
+            scrypt(password, salt, 24, (err, derivedKey) => {
                 if (err) {
                     reject(err);
                 }
@@ -48,7 +48,7 @@ class Pass {
         const size = 16;
         
         return new Promise((resolve, reject) => {
-            crypto.randomFill(Buffer.alloc(size, 0), size, (err, buffer) => {
+            randomFill(Buffer.alloc(size, 0), size, (err, buffer) => {
                 if (err) {
                     reject(err);
                 }

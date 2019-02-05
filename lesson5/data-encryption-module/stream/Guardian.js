@@ -2,9 +2,9 @@ const Transform = require('stream').Transform;
 const Pass      = require('../pass');
 
 class Guardian extends Transform {
-    constructor(props = {}, credentials) {
+    constructor(props = {}, credentials, sign = false) {
         super(props);
-        this.crypto = new Pass(...credentials);
+        this.crypto = new Pass(...credentials, sign);
     }
     
     async _transform(chunk, encoding, done) {
