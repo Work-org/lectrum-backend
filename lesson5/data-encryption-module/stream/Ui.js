@@ -2,9 +2,9 @@ const Readable = require('stream').Readable;
 
 class Ui extends Readable {
     constructor(data, options = {}) {
-        super(Object.assign({highWaterMark: 1}, options)); // for verify single object
+        super(Object.assign({ highWaterMark: 1 }, options)); // for verify single object
         this.data = data;
-        this.fields = {payload: ['name', 'email', 'password'], meta: ['algorithm']};
+        this.fields = { payload: ['name', 'email', 'password'], meta: ['algorithm'] };
     }
     
     _read() {
@@ -27,7 +27,7 @@ class Ui extends Readable {
         }
         
         const keys = Object.keys(customer);
-        let data = {payload: customer};
+        let data = { payload: customer };
         
         if (keys.indexOf('payload') !== -1 && keys.indexOf('meta') !== -1) {
             data = customer;
