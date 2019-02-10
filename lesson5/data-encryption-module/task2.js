@@ -1,8 +1,12 @@
 const { Ui, AccountManager, Guardian } = require('./stream');
+const { normalize, dirname, resolve } = require('path');
 
+const pathCertificate = normalize(dirname(__filename) + '/../certificates');
 const credentials = {
     algorithm: 'aes192',
-    password:  '1qaZxsw2@3edcVfr4'
+    password:  '1qaZxsw2@3edcVfr4',
+    pathKey:   resolve(`${pathCertificate}/key.pem`),
+    spkac:     resolve(`${pathCertificate}/spkac.cnf`)
 };
 
 const customers = [
