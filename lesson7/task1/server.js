@@ -1,7 +1,10 @@
 const net = require('net');
+const Joi = require('joi');
 const fs = require('fs');
 const path = require('path');
-const Joi = require('joi');
+const Filter = require('./filter');
+const Reader = require('./reader');
+const promisify = require('util').promisify;
 
 const server = net.createServer();
 const PORT = process.env.PORT || 8080;
@@ -15,8 +18,7 @@ const schemaFilter = Joi
                          first: Joi.string(),
                          last:  'd'
                      })
-                     .required()
-                     .unknown(),
+                     .unknown(false),
         phone:   Joi.string(),
         address: Joi
                      .object()
@@ -27,24 +29,38 @@ const schemaFilter = Joi
                          street:  Joi.string(),
                          email:   Joi.string()
                      })
-                     .required()
-                     .unknown()
-    });
+                     .unknown(false)
+    })
+    .unknown(false);
+
+// schemaFilter.requiredKeys('name', 'address', 'name.first');
 
 server.on('connection', socket => {
     console.log('New client connected!');
+    const readFile = promisify(fs.readFile);
     
     socket.on('data', chunk => {
-        const filter = JSON.parse(chunk);
-        console.log('filter -->', filter);
-        Joi.validate(filter, schemaFilter, (err, validFilter) => {
+        const filterObject = JSON.parse(chunk);
+        Joi.validate(filterObject, schemaFilter, async (err, validFilter) => {
             if (err) throw err;
-            console.log('validFilter -->', validFilter);
+            // console.log('-->', validFilter, path.resolve('../users.json'));
+            const users = await readFile(path.resolve('../users.json'));
+            // console.log('-->', users);
+            const reader = new Reader({
+                objectMode:    true,
+                highWaterMark: 1,
+            }, JSON.parse(users));
+            
+            const filter = new Filter({
+                highWaterMark:      1,
+                objectMode:         true,
+                readableObjectMode: false,
+                writableObjectMode: true
+            }, validFilter);
+            reader
+                .pipe(filter)
+                .pipe(socket);
         });
-        /*const rs = fs.createReadStream(
-            path.join('example-12/data', 'comments.csv')
-        );
-        rs.pipe(socket);*/
     });
     
     socket.on('end', () => {
