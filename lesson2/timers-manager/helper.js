@@ -1,6 +1,6 @@
 //#NOTE7
 function duplicate(name) {
-    const found = this.timers.filter(({body}) => body.name === name);
+    const found = this.timers.filter(({ body }) => body.name === name);
     if (found.length > 0) {
         throw new Error('Task is exist');
     }
@@ -40,15 +40,17 @@ function check(value, type = null) {
 function refresh() {
     clearTimeout(this._timer);
     console.info('   main timer update -->');
-    this._timer = setTimeout(() => this.timers.map(({body: {name}}) => this.remove(name)), this._afterTime + this._time);
+    this._timer =
+        setTimeout(() => this.timers.map(({ body: { name } }) => this.remove(name)), this._afterTime + this._time);
     
     return this;
 }
 
 function max() {
-    const timers = this.timers.map(({body: {delay}}) => delay);
+    const timers = this.timers.map(({ body: { delay } }) => delay);
     this._afterTime = Math.max(...timers);
+    
     return this;
 }
 
-module.exports = {check, duplicate, refresh, max};
+module.exports = { check, duplicate, refresh, max };

@@ -1,5 +1,6 @@
 // Module
-const manager = require('./module');
+const TimersManager = require('./module');
+const manager = new TimersManager();
 
 const t1 = {
     name    : 't1',

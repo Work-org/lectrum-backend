@@ -1,22 +1,25 @@
-const {check, duplicate, refresh, max} = require('./helper');
+const { check, duplicate, refresh, max } = require('./helper');
+const dg = require('debug');
+const debugRemove = dg('TM:data');
+const debugStart = dg('TM:start');
+const debugStop = dg('TM:stop');
+const debugPause = dg('TM:pause');
+const debugResume = dg('TM:resume');
+const debugAdd = dg('TM:add');
+const debugPrep = dg('TM:prepare');
 
 class TimersManager {
-    constructor(ttl = false) {
-        this.timers = [];
-        this.log = [];
-        this.run = false; // main factor START
-        // this.check = ::check;
-        this.check = check.bind(this);
+    constructor() {
+        this._afterTime = 0;
         this.duplicate = duplicate.bind(this);
         this.refresh = refresh.bind(this);
-        this.max = max.bind(this);
-        this._afterTime = 0;
+        this._timer = null;
+        this.timers = [];
+        this.check = check.bind(this);
         this._time = 10000;
-        this._timer = setTimeout(function (){}, this._time);
-        
-        if (!ttl) {
-            console.info = () => {};
-        }
+        this.log = [];
+        this.run = false; // main factor START
+        this.max = max.bind(this);
     }
     
     add(body) {
@@ -24,8 +27,7 @@ class TimersManager {
         if (this.run) {
             throw new Error('Don\'t add new task');
         }
-        
-        const {name, delay, interval, job} = body;
+        const { name, delay, interval, job } = body;
         
         return this
             .check([[name, 'string'], [delay, 'number'], [interval, 'boolean'], [job, 'function']])
@@ -43,49 +45,49 @@ class TimersManager {
     remove(name) {
         check(name, 'string');
         this.timers = this.timers
-            .map(timer => {
-                const {body, stop} = timer;
-                // found by name, then added
-                if (body.name === name) {
-                    if (stop !== undefined) {
-                        stop();
-                        console.info("\n   stop -->", name);
-                    } else {
-                        console.info(`   > Timer ${name} was not started!`);
-                    }
-                    
-                    console.info("\n   remove -->", name);
-                    
-                    return null;
-                }
+                          .map(timer => {
+                              const { body, stop } = timer;
+                              // found by name, then added
+                              if (body.name === name) {
+                                  if (stop) {
+                                      stop();
+                                      debugRemove("\n   stop -->", name);
+                                  } else {
+                                      debugRemove(`   > Timer ${name} was not started!`);
+                                  }
+                                  debugRemove("\n   remove -->", name);
                 
-                return timer;
-            })
-            .filter(Boolean);
+                                  return null;
+                              }
+            
+                              return timer;
+                          })
+                          .filter(Boolean);
         
-        if (this.timers.length === 0) {
+        if (!this.timers.length) {
             this.run = false;
         }
     }
     
     start() {
         this.run = true;
-        console.info("\n   start -->");
+        this._timer = setTimeout(function () {}, this._time);
+        debugStart("\n   start -->");
         this.timers = this.timers.map(timer => this._prepare(timer));
     }
     
     stop() {
         this.run = false;
-        this.timers.map(({stop, body}) => stop(body.name));
-        console.info("\n   stop ALL -->",);
+        this.timers.map(({ stop, body }) => stop(body.name));
+        debugStop("\n   stop ALL -->");
     }
     
     pause(name) {
         check(name, 'string');
-        const detect = this.timers.filter(({body}) => body.name === name)[0];
-        const {stop, body} = detect;
+        const detect = this.timers.find(({ body }) => body.name === name)[0];
+        const { stop, body } = detect;
         stop(body.name);
-        console.info("\n   pause -->", name);
+        debugPause("\n   pause -->", name);
     }
     
     print() {
@@ -94,14 +96,14 @@ class TimersManager {
     
     resume(name) {
         check(name, 'string');
-        const detect = this.timers.filter(({body}) => body.name === name)[0];
+        const detect = this.timers.find(({ body }) => body.name === name)[0];
         this._prepare(detect);
-        console.info("\n   resume -->", name);
+        debugResume("\n   resume -->", name);
     }
     
     _add(body, args) {
-        const {name, job} = body;
-        const callableArgument = () => arguments[1];
+        const { name, job } = body;
+        const callableArgument = () => arguments[1]; //@todo spread operator for arg job
         job.gett = callableArgument.bind(job);
         
         this
@@ -110,8 +112,7 @@ class TimersManager {
                 body,
                 call: job.bind(job, ...args),
             });
-        
-        console.info("\n   added -->", name);
+        debugAdd("\n   added -->", name);
         
         return this;
     }
@@ -123,8 +124,8 @@ class TimersManager {
     //todo how set static mode property class?
     // noinspection JSMethodCanBeStatic
     _prepare(timer) {
-        const {body, call} = timer;
-        const {name, delay, interval} = body;
+        const { body, call } = timer;
+        const { name, delay, interval } = body;
         const timeFunction = interval ? setInterval : setTimeout;
         const clearTimeFunction = interval ? clearInterval : clearTimeout;
         // update timer main
@@ -133,8 +134,8 @@ class TimersManager {
         // .bind(global, timeFunction(call, delay));
             .bind(global, timeFunction(function () {
                 let log = {
-                    name   : body.name,
-                    in     : body.job.gett().toString(),
+                    name:    body.name,
+                    in:      body.job.gett().toString(),
                     created: (new Date()).toISOString()
                 };
                 
@@ -142,9 +143,9 @@ class TimersManager {
                     log.out = call.call();
                 } catch (e) {
                     log.error = {
-                        name   : e.name,
+                        name:    e.name,
                         message: e.message,
-                        stack  : e.stack.split("\n")
+                        stack:   e.stack.split("\n")
                     }
                 }
                 
@@ -152,11 +153,10 @@ class TimersManager {
                     manager._log(log);
                 }
             }, delay));
-        console.info('   _prepare -->', name);
-        
+        debugPrep('   _prepare -->', name);
         
         return timer;
     }
 }
 
-module.exports = new TimersManager();
+module.exports = TimersManager;
