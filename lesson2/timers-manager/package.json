@@ -1,5 +1,8 @@
 {
   "main": "task1.js",
   "name": "lesson_backend",
-  "description": "lectrum backend task homework"
+  "description": "lectrum backend task homework",
+  "dependencies": {
+    "debug": "^4.1.1"
+  }
 }

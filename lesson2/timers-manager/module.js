@@ -10,19 +10,20 @@ const debugPrep = dg('TM:prepare');
 
 class TimersManager {
     constructor() {
-        this._afterTime = 0;
         this.duplicate = duplicate.bind(this);
         this.refresh = refresh.bind(this);
-        this._timer = null;
         this.timers = [];
         this.check = check.bind(this);
-        this._time = 10000;
         this.log = [];
         this.run = false; // main factor START
         this.max = max.bind(this);
+        
+        this._afterTime = 0;
+        this._timer = null;
+        this._time = 10000;
     }
     
-    add(body) {
+    add(body, ...args) {
         //#NOTE6
         if (this.run) {
             throw new Error('Don\'t add new task');
@@ -32,8 +33,7 @@ class TimersManager {
         return this
             .check([[name, 'string'], [delay, 'number'], [interval, 'boolean'], [job, 'function']])
             .duplicate(name)
-            // .refresh(delay) // timer main start when add timer
-            ._add(body, [...arguments].slice(1))
+            ._add(body, args)
             .max();
     }
     
@@ -84,7 +84,7 @@ class TimersManager {
     
     pause(name) {
         check(name, 'string');
-        const detect = this.timers.find(({ body }) => body.name === name)[0];
+        const detect = this.timers.find(({ body }) => body.name === name);
         const { stop, body } = detect;
         stop(body.name);
         debugPause("\n   pause -->", name);
@@ -96,7 +96,7 @@ class TimersManager {
     
     resume(name) {
         check(name, 'string');
-        const detect = this.timers.find(({ body }) => body.name === name)[0];
+        const detect = this.timers.find(({ body }) => body.name === name);
         this._prepare(detect);
         debugResume("\n   resume -->", name);
     }
@@ -121,17 +121,15 @@ class TimersManager {
         this.log.push(object);
     }
     
-    //todo how set static mode property class?
     // noinspection JSMethodCanBeStatic
     _prepare(timer) {
         const { body, call } = timer;
         const { name, delay, interval } = body;
         const timeFunction = interval ? setInterval : setTimeout;
         const clearTimeFunction = interval ? clearInterval : clearTimeout;
-        // update timer main
-        const manager = this.refresh();
+        const manager = this.refresh(); // update timer main
+        
         timer['stop'] = clearTimeFunction
-        // .bind(global, timeFunction(call, delay));
             .bind(global, timeFunction(function () {
                 let log = {
                     name:    body.name,

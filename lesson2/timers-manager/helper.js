@@ -39,7 +39,6 @@ function check(value, type = null) {
 
 function refresh() {
     clearTimeout(this._timer);
-    console.info('   main timer update -->');
     this._timer =
         setTimeout(() => this.timers.map(({ body: { name } }) => this.remove(name)), this._afterTime + this._time);
     
