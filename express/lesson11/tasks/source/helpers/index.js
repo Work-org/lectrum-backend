@@ -5,3 +5,4 @@ export { authenticate } from './authenticate';
 export { devLogger, errorLogger } from './logger';
 export { requireJsonContent } from './requireJsonContent';
 export { errorHandler, notFoundHandler } from './handlers';
+export { ValidationError, NotFoundError } from './errors';

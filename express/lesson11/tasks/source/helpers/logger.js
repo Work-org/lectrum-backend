@@ -6,7 +6,7 @@ const serverFormat = printf(
 );
 
 const errorFormat = printf(
-    ({ level, message, label, timestamp }) => `${timestamp} ${label}: ${message}`,
+    ({ level, message, label, timestamp }) => `${timestamp} ${message}`,
 );
 
 export const devLogger = createLogger({
