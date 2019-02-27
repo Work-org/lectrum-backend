@@ -2,9 +2,9 @@ const Readable = require('stream').Readable;
 
 class Ui extends Readable {
     constructor(data, options = {}) {
-        super(Object.assign({highWaterMark: 1}, options)); // for verify single object
+        super(options); // for verify single object
         this.data = data;
-        this.fields = {payload: ['name', 'email', 'password'], meta: ['algorithm']};
+        this.fields = { payload: ['name', 'email', 'password'], meta: ['algorithm'] };
         this.on('pipe', src => {
             console.log('pipe -->', src);
         })
@@ -25,12 +25,12 @@ class Ui extends Readable {
     }
     
     _verify(customer) {
-        if (customer === undefined) {
+        if (!customer) {
             return customer;
         }
         
         const keys = Object.keys(customer);
-        let data = {payload: customer};
+        let data = { payload: customer };
         
         if (keys.indexOf('payload') !== -1 && keys.indexOf('meta') !== -1) {
             data = customer;
@@ -42,17 +42,17 @@ class Ui extends Readable {
     }
     
     _checkType(key, data) {
-        if (data[key] === undefined) return false;
-        
-        if (Object.keys(data[key]).length !== this.fields[key].length) {
-            throw new Error('Number of parameters isn\'t correct');
-        }
-        
-        this.fields[key].forEach(field => {
-            if (!data[key][field] || typeof data[key][field] !== 'string') {
-                throw new Error('Problem with parameter. Maybe his type is not a string');
+        if (data[key]){
+            if (Object.keys(data[key]).length !== this.fields[key].length) {
+                throw new Error('Number of parameters isn\'t correct');
             }
-        });
+    
+            this.fields[key].forEach(field => {
+                if (!data[key][field] || typeof data[key][field] !== 'string') {
+                    throw new Error('Problem with parameter. Maybe his type is not a string');
+                }
+            });
+        }
     }
 }
 

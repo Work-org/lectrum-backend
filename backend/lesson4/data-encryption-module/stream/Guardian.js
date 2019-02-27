@@ -6,18 +6,23 @@ class Guardian extends Transform {
     }
     
     _transform(chunk, encoding, done) {
+        const { name, email, password } = chunk;
         this.push({
-            meta   : {
+            meta:    {
                 source: 'ui'
             },
             payload: {
-                name    : chunk.name,
-                email   : Buffer.from(chunk.email, 'utf8').toString('hex'),
-                password: Buffer.from(chunk.password, 'utf8').toString('hex')
+                name,
+                email:    this._hex(email),
+                password: this._hex(password)
             }
         });
         
         done();
+    }
+    
+    _hex(string) {
+        return Buffer.from(string, 'utf8').toString('hex')
     }
 }
 

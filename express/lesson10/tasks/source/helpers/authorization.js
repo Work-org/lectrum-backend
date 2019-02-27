@@ -2,9 +2,11 @@ import { getEnv as env } from './getEnv';
 import dg from 'debug';
 
 const debug = dg('server:auth');
+const pass = env("PASSWORD");
+
 export const authorization = () => (req, res, next)  => {
     try {
-        if (req.headers.authorization === env("PASSWORD")) {
+        if (req.headers.authorization === pass) {
             next();
             return;
         }
