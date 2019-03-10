@@ -25,3 +25,12 @@ export const post = (req, res) => {
         res.status(401).json({ message: error.message });
     }
 };
+
+
+export const list = (req, res) => {
+    if (!req.session.user) {
+        res.sendStatus(401);
+    }
+    
+    res.status(200).json({sessions: req.session.getAll()})
+};

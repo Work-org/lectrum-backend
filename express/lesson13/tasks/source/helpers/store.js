@@ -39,4 +39,8 @@ export class StoreCustom extends Store {
         this.storage.set(sid, session);
         callback();
     }
+    
+    getAll() {
+        return this.storage.toString();
+    }
 }
