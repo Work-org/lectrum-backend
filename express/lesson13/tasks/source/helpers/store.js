@@ -43,4 +43,8 @@ export class StoreCustom extends Store {
     getAll() {
         return this.storage.toString();
     }
+    
+    clearAll() {
+        return this.storage.clear();
+    }
 }

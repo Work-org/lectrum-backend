@@ -34,3 +34,11 @@ export const list = (req, res) => {
     
     res.status(200).json({sessions: req.session.getAll()})
 };
+
+export const clear = (req, res) => {
+    if (!req.session.user) {
+        res.sendStatus(401);
+    }
+    req.session.clearAll();
+    res.status(204);
+};
