@@ -7,3 +7,4 @@ export { requireJsonContent } from './requireJsonContent';
 export { devLogger, errorLogger, notFoundLogger, validationLogger } from './loggers';
 export { ValidationError, NotFoundError } from './errors';
 export { StoreCustom } from './store';
+export { passportSetup } from './passportSetup';

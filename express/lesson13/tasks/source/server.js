@@ -1,23 +1,29 @@
 // Core
 import express from 'express';
 import session from 'express-session';
+import path from 'path';
+import flash from 'connect-flash';
+import passport from 'passport';
+import bodyParser from 'body-parser';
 
 // Routes
 import * as domains from './domains';
-import { StoreCustom } from './helpers';
+import { passportSetup } from './helpers';
 
 // Instruments
 import {
-    devLogger,
     errorLogger,
     notFoundLogger,
     validationLogger,
-    requireJsonContent,
     getPassword,
     NotFoundError,
 } from './helpers';
 
 const app = express();
+
+// view engine setup
+app.set('views', path.join(__dirname, 'views-2fa'));
+app.set('view engine', 'ejs');
 
 const sessionOptions = {
     key:               'user',
@@ -25,7 +31,6 @@ const sessionOptions = {
     resave:            false,
     rolling:           true,
     saveUninitialized: false,
-    store: new StoreCustom(),
     cookie:            {
         httpOnly: true,
         maxAge:   15 * 60 * 1000,
@@ -37,25 +42,18 @@ app.use(
         limit: '10kb',
     }),
 );
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.use(session(sessionOptions));
-app.use(requireJsonContent);
+app.use(flash());
 
-if (process.env.NODE_ENV === 'development') {
-    app.use((req, res, next) => {
-        const body
-            = req.method === 'GET' ? 'Body not supported for GET' : JSON.stringify(req.body, null, 2);
-
-        devLogger.debug(`${req.method}\n${body}`);
-        next();
-    });
-}
-
-app.use('/api/auth', domains.auth);
-app.use('/api/teachers', domains.teachers);
-app.use('/api/pupils', domains.pupils);
-app.use('/api/parents', domains.parents);
-app.use('/api/classes', domains.classes);
-app.use('/api/subjects', domains.subjects);
+passportSetup(passport);
+app.use(passport.initialize());
+app.use(passport.session());
+app.use('/2fa', domains.twoFaRouter);
 
 app.use('*', (req, res, next) => {
     const error = new NotFoundError(
