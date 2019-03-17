@@ -1,0 +1,1 @@
+print("the same as task 1");
