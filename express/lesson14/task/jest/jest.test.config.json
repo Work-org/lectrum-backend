@@ -4,14 +4,34 @@
     "rootDir": "../",
     "verbose": false,
     "notify": true,
+    "globals": {
+        "email": "",
+        "authorize": "",
+        "server": ""
+    },
     "bail": false,
     "collectCoverage": false,
-    "collectCoverageFrom": ["<rootDir>/source/**/*.js"],
+    "collectCoverageFrom": [
+        "<rootDir>/source/**/*.js"
+    ],
     "coveragePathIgnorePatterns": [],
-    "modulePaths": ["<rootDir>/source", "<rootDir>/node_modules"],
-    "moduleFileExtensions": ["js", "json"],
-    "setupFiles": ["<rootDir>/jest/scripts/setupFiles.js"],
+    "modulePaths": [
+        "<rootDir>/source",
+        "<rootDir>/node_modules"
+    ],
+    "moduleFileExtensions": [
+        "js",
+        "json"
+    ],
+    "setupFiles": [
+        "<rootDir>/jest/scripts/setupFiles.js"
+    ],
     "globalSetup": "<rootDir>/jest/scripts/globalSetup.js",
     "globalTeardown": "<rootDir>/jest/scripts/globalTeardown.js",
+    "testEnvironment": "<rootDir>/jest/scripts/testEnvironment.js",
+    "transform": {
+        "^.+\\.m?js$": "babel-jest"
+    },
+    "testEnvironmentOptions": {},
     "testURL": "http://www.test.com"
 }
