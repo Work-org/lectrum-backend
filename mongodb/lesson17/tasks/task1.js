@@ -1,5 +1,4 @@
-use
-vosadchyj;
+use vosadchyj;
 
 db.customers.drop();
 db.orders.drop();
@@ -35,7 +34,7 @@ const random = function (to, from = 0) {
 
 let customers = [];
 // fill customers
-for (let i = 0; i < 300; i++) {
+for (let i = 0; i < 3000; i++) {
     const [first, last] = names[random(names.length)].split(' ');
     customers.push({
         name:    { first, last },
@@ -46,6 +45,7 @@ for (let i = 0; i < 300; i++) {
 
 print("========= customers filling start =========");
 db.customers.insert(customers);
+db.customers.find({});
 print("========= customers filling end =========")
 
 const withOrder = random(10);
@@ -55,7 +55,8 @@ for (let i = 0; i < withOrder; i++) {
     const [first, last] = names[i].split(' ');
     const customer = db.customers.findOne({ "name.first": first, "name.last": last }); // first finded
     orders.push({
-        customerId: customer._id.valueOf(),
+        //@todo because lockup need collection ref
+        customerId: customer._id,
         count:      random(10),
         price:      random(100, 20),
         discount:   random(30, 5),
@@ -66,6 +67,7 @@ for (let i = 0; i < withOrder; i++) {
 
 print("========= orders filling start =========");
 db.orders.insert(orders);
+db.orders.find({});
 print("========= orders filling end =========");
 
 print("========= aggregate customers =========");
@@ -76,24 +78,20 @@ db.customers.aggregate([
             _id:    "$_id",
             fName:  { $first: "$name.first" },
             lName:  { $first: "$name.last" },
-            orders: {
-                $push: { // push if not nul????
-                    $cond: {
-                        if:   {
-                            $ne: [
-                                db.orders.findOne({ customerId: "$_id" }),
-                                null
-                            ]
-                        },
-                        then: db.orders.findOne(
-                            { customerId: "$_id" },
-                            { _id: true, count: true, price: true, discount: true, product: true }
-                        ),
-                        else: null
-                    }
-                }
+        },
+    },
+    {
+        $lookup:
+            {
+                from: "orders",
+                localField: "_id",
+                foreignField: "customerId",
+                as: "orders"
             }
-        }
+    },
+    // if exist order
+    {
+        $match: { "orders": { $ne: [] } }
     }
-], { allowDiskUse: true });
+], { allowDiskUse: true }).pretty();
 print("========= aggregate customers =========");
