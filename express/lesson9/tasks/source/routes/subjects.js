@@ -8,9 +8,16 @@ import { seasonsRouter } from './subjects/season';
 const router = express.Router();
 const debug = dg('router:subject');
 
+router.param('subjectId', function(req, res, next, subjectId) {
+    req.parentsParam = {
+        subjectId
+    };
+    
+    return next();
+});
+
 router.route('/')
       .get((req, res) => {
-          // debug(req.params);
           try {
               res.status(200).json({ data: [] });
           } catch (error) {
@@ -18,7 +25,9 @@ router.route('/')
               debug(error.message, error.stack);
           }
       })
-      .post();
+      .post((req, res) => {
+          res.status(405).json({ message: 'not implement yet' });
+      });
 
 router.route('/:subjectId')
       .get((req, res) => {
@@ -30,7 +39,9 @@ router.route('/:subjectId')
               debug(error.message, error.stack);
           }
       })
-      .post();
+      .post((req, res) => {
+          res.status(405).json({ message: 'not implement yet' });
+      });
 
 router.use('/:subjectId/seasons', seasonsRouter);
 

@@ -7,8 +7,8 @@ const debug = dg('router:seasons');
 
 router.route('/:seasonsId')
       .get((req, res) => {
-          // @todo how get parent params?
-          debug(req.params);
+          // from parent route
+          debug(req.parentsParam);
           try {
               res.status(200).json({ data: ['season1', 'season2'] });
           } catch (error) {
