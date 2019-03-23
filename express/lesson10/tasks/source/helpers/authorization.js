@@ -7,8 +7,7 @@ const pass = env("PASSWORD");
 export const authorization = () => (req, res, next)  => {
     try {
         if (req.headers.authorization === pass) {
-            next();
-            return;
+            return next();
         }
     
         res.status(401).send('Not authorized!');

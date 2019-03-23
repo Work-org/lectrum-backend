@@ -15,7 +15,7 @@ const logg = createLogger({
     ]
 });
 
-if (env("NODE_ENV") === 'development') {
+if (env('NODE_ENV') === 'development') {
     logg.add(
         new transports.Console({
             format: format.simple()
