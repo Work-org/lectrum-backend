@@ -1,11 +1,11 @@
 // Core
 import dg from 'debug';
 import jwt from 'jsonwebtoken';
+import { promisify } from 'util';
 
-const debug = dg('router:auth');
-
+const sign = promisify(jwt.sign);
 export const login = async (req, res, next) => {
-    const auth = req.headers['authorization'];
+    const { authorization: auth } = req.headers;
     
     if (!auth) {
         return res.status(401).json({ message: 'no auth header' });
@@ -17,7 +17,7 @@ export const login = async (req, res, next) => {
                                     .split(':');
     
     if (password === '123456') {
-        const token = await jwt.sign(req.body, key);
+        const token = await sign(req.body, key);
         
         storage.save({ token, key });
         
