@@ -22,7 +22,6 @@
     "@babel/register": "^7.0.0",
     "@lectrum/config-commitlint": "^1.1.0",
     "@lectrum/eslint-config-core": "^1.1.15",
-    "babel-core": "^7.0.0-bridge.0",
     "babel-eslint": "~10.0.1",
     "babel-jest": "^24.5.0",
     "babel-loader": "^8.0.5",

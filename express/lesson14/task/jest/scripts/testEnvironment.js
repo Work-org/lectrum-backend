@@ -1,3 +1,7 @@
+require('@babel/register')({
+    presets: ['@babel/preset-env']
+});
+
 // Core
 const NodeEnvironment = require('jest-environment-node');
 const request = require('supertest');
@@ -29,7 +33,6 @@ class CustomEnvironment extends NodeEnvironment {
     }
     
     async teardown() {
-        this.global.server.close();
         await super.teardown();
     }
     

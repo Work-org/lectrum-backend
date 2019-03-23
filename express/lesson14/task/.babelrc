@@ -31,12 +31,6 @@
                         "modules": false,
                         "spec": true
                     }
-                ],
-                [
-                    "@babel/es2015",
-                    {
-                        "modules": false
-                    }
                 ]
             ],
             "plugins": [

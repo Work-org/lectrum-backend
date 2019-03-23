@@ -21,7 +21,7 @@ describe('classes test', () => {
     
     test('POST classes', async done => {
         const email = process.email;
-        const response = await process.server.post('/api/classes').send({ email });
+        const response = await global.server.post('/api/classes').send({ email });
         expect(response.statusCode).toBe(200);
         const data = getData(response);
         
