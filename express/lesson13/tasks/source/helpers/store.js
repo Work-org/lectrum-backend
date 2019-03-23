@@ -4,8 +4,8 @@ import dg from "debug";
 const debug = dg('session:store');
 
 export class StoreCustom extends Store {
-    constructor(props) {
-        super(props);
+    constructor(options) {
+        super(options);
         this.storage = new Map();
     }
     
@@ -41,7 +41,7 @@ export class StoreCustom extends Store {
     }
     
     getAll() {
-        return this.storage.toString();
+        return Array.from(this.storage);
     }
     
     clearAll() {
