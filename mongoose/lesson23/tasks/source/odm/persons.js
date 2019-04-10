@@ -10,20 +10,34 @@ const schema = new mongoose.Schema(
         },
         name: {
             first: {
-                type:     String,
-                required: true,
+                type:      String,
+                required:  true,
+                minlength: 2,
+                maxlength: 15,
             },
             last: {
-                type:     String,
-                required: true,
+                type:      String,
+                required:  true,
+                minlength: 2,
+                maxlength: 15,
             },
         },
-        image:       String,
-        dateOfBirth: Date,
-        emails:      [
+        image: {
+            type:  String,
+            match: /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g,
+        },
+        dateOfBirth: {
+            type: Date,
+            max:  [
+                () => new Date().setFullYear(new Date().getFullYear() + 1), // mim 5 year old
+                'person should be 5 year',
+            ],
+        },
+        emails: [
             {
                 email: {
                     type:     String,
+                    match:    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
                     required: true,
                     unique:   true,
                 },
@@ -36,7 +50,10 @@ const schema = new mongoose.Schema(
                 primary: Boolean,
             },
         ],
-        sex:    String,
+        sex: {
+            type: String,
+            enum: [ 'm', 'f' ],
+        },
         social: {
             facebook: String,
             linkedIn: String,
@@ -49,8 +66,11 @@ const schema = new mongoose.Schema(
                 parent: mongoose.SchemaTypes.ObjectId,
             },
         ],
-        description: String,
-        started:     Date,
+        description: {
+            type:      String,
+            maxlength: 250,
+        },
+        started: Date,
     },
     {
         timestamps: {

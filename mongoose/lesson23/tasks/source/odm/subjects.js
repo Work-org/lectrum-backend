@@ -9,17 +9,24 @@ const schema = new mongoose.Schema(
             unique:   true,
         },
         title: {
-            type:     String,
-            required: true,
-            unique:   true,
+            type:      String,
+            required:  true,
+            unique:    true,
+            maxlength: 30,
         },
-        image:   String,
+        image: {
+            type:  String,
+            match: /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g,
+        },
         seasons: [
             {
                 season: mongoose.SchemaTypes.ObjectId,
             },
         ],
-        description: String,
+        description: {
+            type:      String,
+            maxlength: 250,
+        },
     },
     {
         timestamps: {

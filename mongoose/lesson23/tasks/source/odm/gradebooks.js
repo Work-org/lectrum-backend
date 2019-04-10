@@ -8,9 +8,14 @@ const schema = new mongoose.Schema(
             required: true,
             unique:   true,
         },
-        image: String,
-        year:  {
+        image: {
+            type:  String,
+            match: /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g,
+        },
+        year: {
             type:     Number,
+            min:      new Date().valueOf(),
+            max:      new Date(2099, 0, 1).valueOf(),
             required: true,
             index:    true,
         },
@@ -26,10 +31,16 @@ const schema = new mongoose.Schema(
                 subjectHash: mongoose.SchemaTypes.ObjectId,
                 seasonHash:  mongoose.SchemaTypes.ObjectId,
                 lessonHash:  mongoose.SchemaTypes.ObjectId,
-                mark:        Number,
+                mark:        {
+                    type: Number,
+                    min:  0,
+                },
             },
         ],
-        description: String,
+        description: {
+            type:      String,
+            maxlength: 250,
+        },
     },
     {
         timestamps: {
