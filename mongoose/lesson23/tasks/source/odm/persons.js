@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { validatorPath } from '../helpers';
 
 // Document shape
 const schema = new mongoose.Schema(
@@ -81,6 +82,8 @@ const schema = new mongoose.Schema(
 );
 
 schema.index({ 'name.first': 1, 'name.last': 1 });
+schema.path('class').validate(validatorPath('class'));
+schema.path('parents').validate(validatorPath('parent'));
 
 // Collection
 export const persons = mongoose.model('persons', schema);

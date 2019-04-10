@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { validatorPath } from "../helpers";
 
 // Document shape
 const schema = new mongoose.Schema(
@@ -52,3 +53,10 @@ const schema = new mongoose.Schema(
 
 // Collection
 export const gradebooks = mongoose.model('gradebooks', schema);
+schema
+    .path('records')
+    .validate(validatorPath('personHash'))
+    .validate(validatorPath('teacherHash'))
+    .validate(validatorPath('subjectHash'))
+    .validate(validatorPath('seasonHash'))
+    .validate(validatorPath('lessonHash'));

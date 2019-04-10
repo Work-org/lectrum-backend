@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { validatorPath } from '../helpers';
 
 // Document shape
 const schema = new mongoose.Schema(
@@ -88,6 +89,7 @@ schema.path('phones').validate(function(value) {
 
     return isValid;
 }, 'Phone should have format 38XXX-XXX-XXXX');
+schema.path('subjects').validate(validatorPath('subject'));
 
 // Collection
 export const teachers = mongoose.model('teachers', schema);

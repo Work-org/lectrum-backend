@@ -1,4 +1,4 @@
-export { validator } from './validator';
+export { validatorSchema, validatorPath } from './validator';
 export { limiter } from './limiter';
 export { authenticate } from './authenticate';
 export { requireJsonContent } from './requireJsonContent';

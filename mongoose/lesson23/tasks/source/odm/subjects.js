@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { validatorPath } from "../helpers";
 
 // Document shape
 const schema = new mongoose.Schema(
@@ -37,6 +38,7 @@ const schema = new mongoose.Schema(
 );
 
 schema.index({ title: 'text', description: 'text' });
+schema.path('seasons').validate(validatorPath('season'));
 
 // Collection
 export const subjects = mongoose.model('subjects', schema);
